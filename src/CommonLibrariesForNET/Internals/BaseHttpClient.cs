@@ -82,6 +82,13 @@ namespace Salesforce.Common.Internals
             throw new BaseHttpClientException(response, responseMessage.StatusCode);
         }
 
+        public async Task<HttpResponseMessage> HttpPostVoidAsync(string payload, Uri uri)
+        {
+            var content = new StringContent(payload, Encoding.UTF8, _contentType);
+
+            return await HttpClient.PostAsync(uri, content).ConfigureAwait(false);
+        }
+
         protected async Task<string> HttpPatchAsync(string payload, Uri uri)
         {
             var content = new StringContent(payload, Encoding.UTF8, _contentType);

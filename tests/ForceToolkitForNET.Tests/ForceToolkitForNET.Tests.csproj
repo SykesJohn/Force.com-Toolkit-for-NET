@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Salesforce.Force.Tests</RootNamespace>
     <AssemblyName>Salesforce.Force.Tests</AssemblyName>
     <SignAssembly>true</SignAssembly>
@@ -19,6 +19,10 @@
     <AssemblyOriginatorKeyFile>..\..\src\ForceTookitForNet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="appsettings.json" />
+    <None Remove="appsettings_uat.json" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\src\ChatterToolkitForNET\ChatterToolkitForNET.csproj" />
     <ProjectReference Include="..\..\src\CommonLibrariesForNET\CommonLibrariesForNET.csproj" />
     <ProjectReference Include="..\..\src\ForceToolkitForNET\ForceToolkitForNET.csproj" />
@@ -28,6 +32,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
@@ -36,8 +43,30 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="appsettings_uat.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="KnownGoodContent\UserObjectDescribeMetadata.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Salesforce.Chatter">
+      <HintPath>..\..\src\ChatterToolkitForNET\bin\Debug\net6\Salesforce.Chatter.dll</HintPath>
+    </Reference>
+    <Reference Include="Salesforce.Common">
+      <HintPath>..\..\src\CommonLibrariesForNET\bin\Debug\net6\Salesforce.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Salesforce.Force">
+      <HintPath>..\..\src\ForceToolkitForNET\obj\Debug\net6\Salesforce.Force.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="BulkForceClientFunctionalTests.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 </Project>

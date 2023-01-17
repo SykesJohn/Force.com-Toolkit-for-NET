@@ -24,10 +24,10 @@ namespace Salesforce.Force.Tests
             {
                 Content = new JsonContent(new AuthToken
                 {
-                    AccessToken = "AccessToken",
+                    Access_Token = "AccessToken",
                     Id = "Id",
-                    InstanceUrl = "InstanceUrl",
-                    IssuedAt = "IssuedAt",
+                    Instance_Url = "InstanceUrl",
+                    Issued_At = "IssuedAt",
                     Signature = "Signature"
                 })
             };

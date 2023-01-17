@@ -12,6 +12,7 @@ using Salesforce.Common.Models.Json;
 using Salesforce.Common.Models.Xml;
 using System.Dynamic;
 using System.Collections;
+using System.Text.Json;
 
 namespace Salesforce.Force
 {
@@ -22,12 +23,12 @@ namespace Salesforce.Force
 
 	    public ISelectListResolver SelectListResolver { get; set; }
 
-        public ForceClient(string instanceUrl, string accessToken, string apiVersion)
-            : this(instanceUrl, accessToken, apiVersion, new HttpClient(), new HttpClient())
+        public ForceClient(string instanceUrl, string accessToken, string apiVersion, JsonSerializerOptions Options = null)
+            : this(instanceUrl, accessToken, apiVersion, new HttpClient(), new HttpClient(),false, Options)
         {
         }
 
-        public ForceClient(string instanceUrl, string accessToken, string apiVersion, HttpClient httpClientForJson, HttpClient httpClientForXml, bool callerWillDisposeHttpClients = false)
+        public ForceClient(string instanceUrl, string accessToken, string apiVersion, HttpClient httpClientForJson, HttpClient httpClientForXml, bool callerWillDisposeHttpClients = false, JsonSerializerOptions Options = null)
         {
             if (string.IsNullOrEmpty(instanceUrl)) throw new ArgumentNullException("instanceUrl");
             if (string.IsNullOrEmpty(accessToken)) throw new ArgumentNullException("accessToken");
@@ -35,7 +36,7 @@ namespace Salesforce.Force
             if (httpClientForJson == null) throw new ArgumentNullException("httpClientForJson");
             if (httpClientForXml == null) throw new ArgumentNullException("httpClientForXml");
 
-            _jsonHttpClient = new JsonHttpClient(instanceUrl, apiVersion, accessToken, httpClientForJson, callerWillDisposeHttpClients);
+            _jsonHttpClient = new JsonHttpClient(instanceUrl, apiVersion, accessToken, httpClientForJson, Options, callerWillDisposeHttpClients);
             _xmlHttpClient = new XmlHttpClient(instanceUrl, apiVersion, accessToken, httpClientForXml, callerWillDisposeHttpClients);
             
             SelectListResolver = new DataMemberSelectListResolver();
@@ -90,7 +91,15 @@ namespace Salesforce.Force
             return response;
         }
 
-        public async Task<T> QueryByIdAsync<T>(string objectName, string recordId)
+    public async Task<HttpResponseMessage> ExecuteRestApiVoidAsync(string apiName, object inputObject)
+      {
+			if(string.IsNullOrEmpty(apiName)) throw new ArgumentNullException("apiName");
+			if(inputObject == null) throw new ArgumentNullException(nameof(inputObject));
+			var response = await _jsonHttpClient.HttpPostRestApiVoidAsync(apiName, inputObject);
+			return response;
+			}
+
+		public async Task<T> QueryByIdAsync<T>(string objectName, string recordId)
         {
             if (string.IsNullOrEmpty(objectName)) throw new ArgumentNullException("objectName");
             if (string.IsNullOrEmpty(recordId)) throw new ArgumentNullException("recordId");

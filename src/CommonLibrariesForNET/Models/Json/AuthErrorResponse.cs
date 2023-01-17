@@ -4,10 +4,10 @@ namespace Salesforce.Common.Models.Json
 {
     public class AuthErrorResponse
     {
-        [JsonProperty(PropertyName = "error_description")]
-        public string ErrorDescription;
+        [JsonProperty("error_description")]
+        public string ErrorDescription { get; set; }
 
-        [JsonProperty(PropertyName = "error")]
-        public string Error;
+        [JsonProperty("error")]
+        public string Error { get; set; }
     }
 }

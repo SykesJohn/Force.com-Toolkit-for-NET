@@ -11,6 +11,7 @@ using Salesforce.Common;
 using Salesforce.Common.Models.Json;
 using Salesforce.Force.Tests.Models;
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 //using WadeWegner.Salesforce.SOAPHelpers;
 
 namespace Salesforce.Force.Tests
@@ -18,17 +19,35 @@ namespace Salesforce.Force.Tests
   [TestFixture]
   public class ForceClientFunctionalTests
   {
-    private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
-    private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
-    private static string _username = ConfigurationManager.AppSettings["Username"];
-    private static string _password = ConfigurationManager.AppSettings["Password"];
-    private static string _organizationId = ConfigurationManager.AppSettings["OrganizationId"];
-    private static string _instanceUrl = ConfigurationManager.AppSettings["InstanceUrl"];
+		//private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
+		//private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
+		//private static string _username = ConfigurationManager.AppSettings["Username"];
+		//private static string _password = ConfigurationManager.AppSettings["Password"];
+		//private static string _organizationId = ConfigurationManager.AppSettings["OrganizationId"];
+		//private static string _instanceUrl = ConfigurationManager.AppSettings["InstanceUrl"];
+		private readonly IConfiguration _configuration;
+		private static string _consumerKey;
+		private static string _consumerSecret;
+		private static string _username;
+		private static string _password;
+		private static string _organizationId;
+    private static string _instanceUrl;
 
     private AuthenticationClient _auth;
     private ForceClient _client;
 
-    [OneTimeSetUp]
+    public ForceClientFunctionalTests()
+      {
+      _configuration=new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+      _consumerKey=_configuration["ConsumerKey"];
+      _consumerSecret=_configuration["ConsumerSecret"];
+      _username=_configuration["Username"];
+      _password=_configuration["Password"];
+      _organizationId=_configuration["OrganizationId"];
+      _instanceUrl=_configuration["InstanceUrl"];
+      }
+
+		[OneTimeSetUp]
     public void Init()
     {
       if (string.IsNullOrEmpty(_consumerKey) && string.IsNullOrEmpty(_consumerSecret) && string.IsNullOrEmpty(_username) && string.IsNullOrEmpty(_password) && string.IsNullOrEmpty(_organizationId))
@@ -46,7 +65,7 @@ namespace Salesforce.Force.Tests
       const int SecurityProtocolTypeTls12 = 3072;
       ServicePointManager.SecurityProtocol |= (SecurityProtocolType)(SecurityProtocolTypeTls12 | SecurityProtocolTypeTls11);
 
-      _auth = new AuthenticationClient();
+      _auth = new AuthenticationClient("v56.0", _instanceUrl);
       _auth.UsernamePasswordAsync(_consumerKey, _consumerSecret, _username, _password).Wait();
 
       _client = new ForceClient(_auth.InstanceUrl, _auth.AccessToken, _auth.ApiVersion);

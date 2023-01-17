@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net452;net462;net472</TargetFrameworks>
+    <TargetFramework>NET6</TargetFramework>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeSalesforceCommon</TargetsForTfmSpecificBuildOutput>
     <RootNamespace>Salesforce.Chatter</RootNamespace>
     <AssemblyName>Salesforce.Chatter</AssemblyName>
@@ -15,27 +15,6 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net452'">
-    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.5.2\1.0.1\lib\net452\</FrameworkPathOverride>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)'=='net452'">
-    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.5.2" Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net462'">
-    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.6.2\1.0.1\lib\net462\</FrameworkPathOverride>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)'=='net462'">
-    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.6.2" Version="1.0.1" ExcludeAssets="All" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-  </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net472'">
-    <FrameworkPathOverride>$(NuGetPackageRoot)microsoft.targetingpack.netframework.v4.7.2\1.0.0\lib\net472\</FrameworkPathOverride>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)'=='net472'">
-    <PackageReference Include="Microsoft.TargetingPack.NETFramework.v4.7.2" Version="1.0.0" ExcludeAssets="All" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-  </ItemGroup>
   <PropertyGroup>
     <PackageId>DeveloperForce.Chatter</PackageId>
     <Title>DeveloperForce.Chatter</Title>

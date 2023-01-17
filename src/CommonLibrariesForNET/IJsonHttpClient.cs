@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Salesforce.Common.Models.Json;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
 namespace Salesforce.Common
 {
@@ -25,7 +26,13 @@ namespace Salesforce.Common
         Task<SuccessResponse> HttpPatchAsync(object inputObject, string urlSuffix);
         Task<SuccessResponse> HttpPatchAsync(object inputObject, Uri uri);
         Task<SuccessResponse> HttpPatchAsync(object inputObject, string urlSuffix, bool ignoreNull);
-        Task<SuccessResponse> HttpPatchAsync(object inputObject, Uri uri, NullValueHandling nullValueHandling);
+        Task<SuccessResponse> HttpPatchAsync(object inputObject, Uri uri, JsonSerializerOptions nullValueHandling);
+
+        // PUT
+        Task<SuccessResponse> HttpPutAsync(object inputObject, string urlSuffix);
+        Task<SuccessResponse> HttpPutAsync(object inputObject, Uri uri);
+        Task<SuccessResponse> HttpPutAsync(object inputObject, string urlSuffix, bool ignoreNull);
+        Task<SuccessResponse> HttpPutAsync(object inputObject, Uri uri, JsonSerializerOptions nullValueHandling);
 
         // DELETE
         Task<bool> HttpDeleteAsync(string urlSuffix);

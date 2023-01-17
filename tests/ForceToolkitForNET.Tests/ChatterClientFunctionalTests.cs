@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
+//using System.Configuration;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using Salesforce.Chatter.Models;
 using Salesforce.Common;
@@ -13,13 +15,29 @@ namespace Salesforce.Chatter.FunctionalTests
     [TestFixture]
     public class ChatterClientTests
     {
-        private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
-        private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
-        private static string _username = ConfigurationManager.AppSettings["Username"];
-        private static string _password = ConfigurationManager.AppSettings["Password"];
+    //private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
+    //private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
+    //private static string _username = ConfigurationManager.AppSettings["Username"];
+    //private static string _password = ConfigurationManager.AppSettings["Password"];
+    private readonly IConfiguration _configuration;
+    private static string _consumerKey;
+    private static string _consumerSecret;
+    private static string _username;
+    private static string _password;
+    private static string _instanceUrl;
 
-        private AuthenticationClient _auth;
+    private AuthenticationClient _auth;
         private ChatterClient _chatterClient;
+
+    public ChatterClientTests()
+      {
+			_configuration=new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+			_consumerKey=_configuration["ConsumerKey"];
+      _consumerSecret=_configuration["ConsumerSecret"];
+      _username=_configuration["Username"];
+      _password=_configuration["Password"];
+      _instanceUrl=_configuration["InstanceUrl"];
+      }
 
         [OneTimeSetUp]
         public void Init()
@@ -27,9 +45,10 @@ namespace Salesforce.Chatter.FunctionalTests
             if (string.IsNullOrEmpty(_consumerKey) && string.IsNullOrEmpty(_consumerSecret) && string.IsNullOrEmpty(_username) && string.IsNullOrEmpty(_password))
             {
                 _consumerKey = Environment.GetEnvironmentVariable("ConsumerKey");
-                _consumerSecret = Environment.GetEnvironmentVariable("ConsumerSecret");
+				_consumerSecret = Environment.GetEnvironmentVariable("ConsumerSecret");
                 _username = Environment.GetEnvironmentVariable("Username");
                 _password = Environment.GetEnvironmentVariable("Password");
+                _instanceUrl = Environment.GetEnvironmentVariable("InstanceUrl");
             }
 
             // Use TLS 1.2 (instead of defaulting to 1.0)
@@ -37,8 +56,8 @@ namespace Salesforce.Chatter.FunctionalTests
             const int SecurityProtocolTypeTls12 = 3072;
             ServicePointManager.SecurityProtocol |= (SecurityProtocolType)(SecurityProtocolTypeTls12 | SecurityProtocolTypeTls11); 
 
-            _auth = new AuthenticationClient();
-            _auth.UsernamePasswordAsync(_consumerKey, _consumerSecret, _username, _password).Wait();
+            _auth = new AuthenticationClient("v56.0", _instanceUrl);
+            _auth.UsernamePasswordAsync(_consumerKey, _consumerSecret, _username, _password, _instanceUrl).Wait();
             
             _chatterClient = new ChatterClient(_auth.InstanceUrl, _auth.AccessToken, _auth.ApiVersion);
         }

@@ -9,21 +9,38 @@ using Salesforce.Force.Tests.Models;
 using Salesforce.Common;
 using Salesforce.Common.Models.Json;
 using Salesforce.Common.Models.Xml;
+using Microsoft.Extensions.Configuration;
 
 namespace Salesforce.Force.Tests
 {
     [TestFixture]
     public class CommonFunctionalTests
     {
-        private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
-        private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
-        private static string _username = ConfigurationManager.AppSettings["Username"];
-        private static string _password = ConfigurationManager.AppSettings["Password"];
+		//private static string _consumerKey = ConfigurationManager.AppSettings["ConsumerKey"];
+		//private static string _consumerSecret = ConfigurationManager.AppSettings["ConsumerSecret"];
+		//private static string _username = ConfigurationManager.AppSettings["Username"];
+		//private static string _password = ConfigurationManager.AppSettings["Password"];
+		private readonly IConfiguration _configuration;
+		private static string _consumerKey;
+		private static string _consumerSecret;
+		private static string _username;
+		private static string _password;
+    private static string _instanceUrl;
 
-        private AuthenticationClient _auth;
+		private AuthenticationClient _auth;
         private JsonHttpClient _jsonHttpClient;
 
-        [OneTimeSetUp]
+    public CommonFunctionalTests()
+      {
+			_configuration=new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+			_consumerKey=_configuration["ConsumerKey"];
+			_consumerSecret=_configuration["ConsumerSecret"];
+			_username=_configuration["Username"];
+			_password=_configuration["Password"];
+      _instanceUrl=_configuration["InstanceUrl"];
+			}
+
+		[OneTimeSetUp]
         public void Init()
         {
             if (string.IsNullOrEmpty(_consumerKey) && string.IsNullOrEmpty(_consumerSecret) && string.IsNullOrEmpty(_username) && string.IsNullOrEmpty(_password))
@@ -32,6 +49,7 @@ namespace Salesforce.Force.Tests
                 _consumerSecret = Environment.GetEnvironmentVariable("ConsumerSecret");
                 _username = Environment.GetEnvironmentVariable("Username");
                 _password = Environment.GetEnvironmentVariable("Password");
+                _instanceUrl = Environment.GetEnvironmentVariable("InstanceUrl");
             }
 
             // Use TLS 1.2 (instead of defaulting to 1.0)
@@ -44,6 +62,7 @@ namespace Salesforce.Force.Tests
             //ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             _auth = new AuthenticationClient();
+            _auth = new AuthenticationClient("v56.0", _instanceUrl);
             _auth.UsernamePasswordAsync(_consumerKey, _consumerSecret, _username, _password).Wait();
 
             _jsonHttpClient = new JsonHttpClient(_auth.InstanceUrl, _auth.ApiVersion, _auth.AccessToken, new HttpClient());
@@ -219,7 +238,7 @@ namespace Salesforce.Force.Tests
         [Test]
         public void CheckInterfaces()
         {
-            using (IAuthenticationClient aa = new AuthenticationClient())
+            using (IAuthenticationClient aa = new AuthenticationClient("v56.0", _instanceUrl))
             {
                 Assert.IsNotNull(aa);
             }

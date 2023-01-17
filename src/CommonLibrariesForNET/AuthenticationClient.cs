@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json;
+//using Newtonsoft.Json.Linq;
 using Salesforce.Common.Models.Json;
 
 namespace Salesforce.Common
@@ -18,22 +20,34 @@ namespace Salesforce.Common
         public string ApiVersion { get; set; }
 
         private const string UserAgent = "forcedotcom-toolkit-dotnet";
-        private const string TokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token";
+        private readonly string TokenRequestEndpointUrl;
+        //private const string TokenRequestEndpointUrl = "https://test.salesforce.com/services/oauth2/token";
         private readonly HttpClient _httpClient;
         private readonly bool _disposeHttpClient;
+    private JsonSerializerOptions JsonOptions;
 
-        public AuthenticationClient(string apiVersion = "v36.0")
-            : this(new HttpClient(), apiVersion)
+        public AuthenticationClient(string apiVersion = "v56.0", string TokenEndpoint = "https://login.salesforce.com/services/oauth2/token")
+            : this(new HttpClient(), apiVersion, false, TokenEndpoint)
         {
-        }
+      TokenRequestEndpointUrl=TokenEndpoint;
+      JsonOptions=JsonOptions=new JsonSerializerOptions(JsonSerializerDefaults.Web);
+			JsonOptions.DefaultIgnoreCondition=JsonIgnoreCondition.Never;
+      JsonOptions.IncludeFields=true;
+			JsonOptions.Converters.Add(new JsonStringEnumConverter());
+			}
 
-        public AuthenticationClient(HttpClient httpClient, string apiVersion  = "v36.0", bool callerWillDisposeHttpClient = false)
+        public AuthenticationClient(HttpClient httpClient, string apiVersion  = "v36.0", bool callerWillDisposeHttpClient = false, string TokenEndpoint = "https://login.salesforce.com/services/oauth2/token")
         {
             if (httpClient == null) throw new ArgumentNullException("httpClient");
+      TokenRequestEndpointUrl=TokenEndpoint;
 
             _httpClient = httpClient;
             _disposeHttpClient = !callerWillDisposeHttpClient;
             ApiVersion = apiVersion;
+      JsonOptions=JsonOptions=new JsonSerializerOptions(JsonSerializerDefaults.Web);
+			JsonOptions.DefaultIgnoreCondition=JsonIgnoreCondition.Never;
+			JsonOptions.IncludeFields=true;
+			JsonOptions.Converters.Add(new JsonStringEnumConverter());
         }
 
         public Task UsernamePasswordAsync(string clientId, string clientSecret, string username, string password)
@@ -73,15 +87,15 @@ namespace Salesforce.Common
 
             if (responseMessage.IsSuccessStatusCode)
             {
-                var authToken = JsonConvert.DeserializeObject<AuthToken>(response);
+                var authToken = JsonSerializer.Deserialize<AuthToken>(response, JsonOptions);
 
-                AccessToken = authToken.AccessToken;
-                InstanceUrl = authToken.InstanceUrl;
+                AccessToken = authToken.Access_Token;
+                InstanceUrl = authToken.Instance_Url;
                 Id = authToken.Id;
             }
             else
             {
-                var errorResponse = JsonConvert.DeserializeObject<AuthErrorResponse>(response);
+                var errorResponse = JsonSerializer.Deserialize<AuthErrorResponse>(response, JsonOptions);
                 throw new ForceAuthException(errorResponse.Error, errorResponse.ErrorDescription, responseMessage.StatusCode);
             }
         }
@@ -124,18 +138,18 @@ namespace Salesforce.Common
 
             if (responseMessage.IsSuccessStatusCode)
             {
-                var authToken = JsonConvert.DeserializeObject<AuthToken>(response);
+                var authToken = JsonSerializer.Deserialize<AuthToken>(response, JsonOptions);
 
-                AccessToken = authToken.AccessToken;
-                InstanceUrl = authToken.InstanceUrl;
+                AccessToken = authToken.Access_Token;
+                InstanceUrl = authToken.Instance_Url;
                 Id = authToken.Id;
-                RefreshToken = authToken.RefreshToken;
+                RefreshToken = authToken.Refresh_Token;
             }
             else
             {
                 try
                 {
-                    var errorResponse = JsonConvert.DeserializeObject<AuthErrorResponse>(response);
+                    var errorResponse = JsonSerializer.Deserialize<AuthErrorResponse>(response, JsonOptions);
                     throw new ForceAuthException(errorResponse.Error, errorResponse.ErrorDescription);
                 }
                 catch (Exception ex)
@@ -172,16 +186,16 @@ namespace Salesforce.Common
 
             if (responseMessage.IsSuccessStatusCode)
             {
-                var authToken = JsonConvert.DeserializeObject<AuthToken>(response);
+                var authToken = JsonSerializer.Deserialize<AuthToken>(response, JsonOptions);
 
-                AccessToken = authToken.AccessToken;
+                AccessToken = authToken.Access_Token;
                 RefreshToken = refreshToken;
-                InstanceUrl = authToken.InstanceUrl;
+                InstanceUrl = authToken.Instance_Url;
                 Id = authToken.Id;
             }
             else
             {
-                var errorResponse = JsonConvert.DeserializeObject<AuthErrorResponse>(response);
+                var errorResponse = JsonSerializer.Deserialize<AuthErrorResponse>(response, JsonOptions);
                 throw new ForceException(errorResponse.Error, errorResponse.ErrorDescription);
             }
         }
@@ -199,11 +213,12 @@ namespace Salesforce.Common
                 {
                     try
                     {
-                        var jToken = JToken.Parse(response);
-                        if (jToken.Type == JTokenType.Array)
+                        var jToken = JsonDocument.Parse(response).RootElement;
+                        if (jToken.ValueKind == JsonValueKind.Array)
                         {
-                            var jArray = JArray.Parse(response);
-                            List<Models.Json.Version> versionList = JsonConvert.DeserializeObject<List<Models.Json.Version>>(jArray.ToString());
+                            //var jArray = JArray.Parse(response);
+                            //List<Models.Json.Version> versionList = JsonSerializer.Deserialize<List<Models.Json.Version>>(jArray.ToString());
+              var versionList = jToken.Deserialize<List<Models.Json.Version>>(JsonOptions);
                             if (versionList != null && versionList.Count > 0)
                             {
                                 versionList.Sort();
@@ -219,7 +234,7 @@ namespace Salesforce.Common
                 }
                 else
                 {
-                    var errorResponse = JsonConvert.DeserializeObject<AuthErrorResponse>(response);
+                    var errorResponse = JsonSerializer.Deserialize<AuthErrorResponse>(response, JsonOptions);
                     throw new ForceException(errorResponse.Error, errorResponse.ErrorDescription);
                 }
             }
